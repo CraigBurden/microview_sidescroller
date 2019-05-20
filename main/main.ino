@@ -1,4 +1,5 @@
 #include <Adafruit_SSD1306.h>
+#include <Adafruit_GFX.h>
 #include <stdint.h>
 #include <SPI.h>
 
@@ -22,73 +23,91 @@
   #define OLED_BUFFER_INDEX_TYPE uint32_t
 #endif
 
+#define SPRITE_WIDTH   16
+#define SPRITE_HEIGHT   16
+//static const uint8_t PROGMEM sprite_bmp[] =
+//{
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000,
+//    0b00000000, 0b00000000
+//};
 
-Adafruit_SSD1306 display(OLED_PIXEL_WIDTH + OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_HEIGHT,
-  &SPI, OLED_DC, OLED_RESET, OLED_CS);
+static const uint8_t PROGMEM man_bmp[] =
+{
+    0b00000001, 0b10000000,
+    0b00000010, 0b01000000,
+    0b00000100, 0b00100000,
+    0b00000100, 0b00100000,
+    0b00000010, 0b01000000,
+    0b00000001, 0b10000000,
+    0b00111111, 0b11111000,
+    0b00000001, 0b00000000,
+    0b00000001, 0b00000000,
+    0b00000001, 0b00000000,
+    0b00000001, 0b00000000,
+    0b00000010, 0b10000000,
+    0b00000100, 0b01000000,
+    0b00000100, 0b01000000,
+    0b00001000, 0b00100000,
+    0b00111000, 0b00111000
+};
 
-uint8_t oled_display_buffer[(OLED_PIXEL_COUNT / 8) + 1] = {0};
+static const uint8_t PROGMEM tortoise_bmp[] =
+{
+    0b00000000, 0b00000000,
+    0b00000000, 0b00000000,
+    0b00000000, 0b00000000,
+    0b00000000, 0b00000000,
+    0b00000000, 0b00000000,
+    0b00000000, 0b00000000,
+    0b00000000, 0b00000000,
+    0b00000000, 0b00000000,
+    0b00000000, 0b110000000,
+    0b00110001, 0b111000000,
+    0b01111011, 0b111100000,
+    0b01111111, 0b111100010,
+    0b00011111, 0b111111100,
+    0b00000011, 0b111111000,
+    0b00000011, 0b000110000,
+    0b11111111, 0b111111111
+};
 
-uint8_t get_pixel_value_by_coord(uint8_t* display_buffer, uint8_t x, uint8_t y);
-uint8_t get_pixel_value_by_index(uint8_t* display_buffer, OLED_BUFFER_INDEX_TYPE index);
-uint8_t set_pixel_value_by_coord(uint8_t* display_buffer, uint8_t x, uint8_t y, uint8_t value);
-uint8_t set_pixel_value_by_index(uint8_t* display_buffer, OLED_BUFFER_INDEX_TYPE index, uint8_t value);
+Adafruit_SSD1306 display(OLED_PIXEL_WIDTH + OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_HEIGHT, &SPI, OLED_DC, OLED_RESET, OLED_CS);
 
-void setup() {
+void setup()
+{
+  Serial.begin(115200);
   if(!display.begin(SSD1306_SWITCHCAPVCC)) 
   {
     Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
+    while(1);
   }
 
   display.clearDisplay();
 
-  set_pixel_value_by_coord(oled_display_buffer, 0, 0, 1);
-  set_pixel_value_by_coord(oled_display_buffer, 0, 47, 1);
-  set_pixel_value_by_coord(oled_display_buffer, 63, 0, 1);
-  set_pixel_value_by_coord(oled_display_buffer, 63, 47, 1);
+  display.drawBitmap(OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_HEIGHT - SPRITE_HEIGHT - 1, man_bmp, SPRITE_WIDTH, SPRITE_HEIGHT, 1);
+
+  display.drawBitmap(OLED_PIXEL_WIDTH_OFFSET + 30, OLED_PIXEL_HEIGHT - SPRITE_HEIGHT, tortoise_bmp, SPRITE_WIDTH, SPRITE_HEIGHT, 1);
+
+  display.drawLine(OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_HEIGHT - 1, OLED_PIXEL_WIDTH - 1 + OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_HEIGHT - 1, WHITE); // Floor
+  
   display.display();
 }
 
-void loop() {
-  for(OLED_BUFFER_INDEX_TYPE loop_index = 0; loop_index < OLED_PIXEL_COUNT; loop_index++)
-  {
-    display.drawPixel(OLED_PIXEL_TO_X_INDEX(loop_index) + OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_TO_Y_INDEX(loop_index), get_pixel_value_by_index(oled_display_buffer, loop_index));
-  }
-  display.display();
-  
-}
-
-uint8_t get_pixel_value_by_coord(uint8_t* display_buffer, uint8_t x, uint8_t y)
+void loop()
 {
-  OLED_BUFFER_INDEX_TYPE index = x + (y * OLED_PIXEL_WIDTH);
-  
-  return get_pixel_value_by_index(display_buffer, index);
-}
 
-uint8_t get_pixel_value_by_index(uint8_t* display_buffer, OLED_BUFFER_INDEX_TYPE index)
-{ 
-  return (display_buffer[index / 8] & (0x1 << (index % 8))) >> (index % 8);
-}
-
-uint8_t set_pixel_value_by_coord(uint8_t* display_buffer, uint8_t x, uint8_t y, uint8_t value)
-{
-  OLED_BUFFER_INDEX_TYPE index = x + (y * OLED_PIXEL_WIDTH);
-  
-  set_pixel_value_by_index(display_buffer, index, value);
-}
-
-uint8_t set_pixel_value_by_index(uint8_t* display_buffer, OLED_BUFFER_INDEX_TYPE index, uint8_t value)
-{ 
-  if(value == 0)
-  {
-    display_buffer[index / 8] &= ~(0x1 << (index % 8));
-  }
-  else if (value == 1)
-  {
-    display_buffer[index / 8] |= (0x1 << (index % 8));
-  }
-  else if (value == 2)
-  {
-    display_buffer[index / 8] ^= (0x1 << (index % 8));
-  }
 }
