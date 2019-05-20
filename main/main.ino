@@ -1,5 +1,6 @@
 #include <Adafruit_SSD1306.h>
 #include <stdint.h>
+#include <SPI.h>
 
 #define OLED_PIXEL_WIDTH  64
 #define OLED_PIXEL_HEIGHT 48
@@ -16,23 +17,33 @@
   #define OLED_BUFFER_TYPE uint32_t
 #endif
 
+#define OLED_DC     8
+#define OLED_CS     10
+#define OLED_RESET  7
+Adafruit_SSD1306 display(OLED_PIXEL_WIDTH * 2, OLED_PIXEL_HEIGHT,
+  &SPI, OLED_DC, OLED_RESET, OLED_CS);
+
 uint8_t oled_display_buffer[OLED_PIXEL_COUNT / 8] = {0};
 
 uint8_t get_pixel_value(uint8_t* display_buffer, OLED_BUFFER_TYPE index);
 uint8_t set_pixel_value(uint8_t* display_buffer, OLED_BUFFER_TYPE index, uint8_t value);
 
 void setup() {
-//    uView.begin();              // start MicroView
-//    uView.clear(PAGE);          // clear page
-//    uView.print("Hello, World!");   // display string
-//    uView.display();
+  if(!display.begin(SSD1306_SWITCHCAPVCC)) 
+  {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+
+  display.clearDisplay();
+  display.display();
 }
 
 void loop() {
   for(OLED_BUFFER_TYPE loop_index = 0; loop_index < (OLED_PIXEL_COUNT - 1); loop_index++)
   {
-//    uView.pixel(OLED_PIXEL_TO_X_INDEX(loop_index), OLED_PIXEL_TO_Y_INDEX(loop_index), get_pixel_value(oled_display_buffer, loop_index), 0);
-//    uView.display();
+    display.drawPixel(OLED_PIXEL_TO_X_INDEX(loop_index), OLED_PIXEL_TO_Y_INDEX(loop_index), get_pixel_value(oled_display_buffer, loop_index));
+    display.display();
     set_pixel_value(oled_display_buffer, loop_index, 2);
   }
   
