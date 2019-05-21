@@ -157,14 +157,7 @@ void setup()
     while(1);
   }
 
-  display.clearDisplay();
-
-  display.drawBitmap(OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_HEIGHT - SPRITE_HEIGHT - 1, man_run_bmp[0], SPRITE_WIDTH, SPRITE_HEIGHT, 1);
-
-  display.drawBitmap(OLED_PIXEL_WIDTH_OFFSET + 30, OLED_PIXEL_HEIGHT - SPRITE_HEIGHT - 1, tortoise_bmp[0], SPRITE_WIDTH, SPRITE_HEIGHT, 1);
-
-  display.drawLine(OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_HEIGHT - 1, OLED_PIXEL_WIDTH - 1 + OLED_PIXEL_WIDTH_OFFSET, OLED_PIXEL_HEIGHT - 1, WHITE); // Floor
-  
+  display.clearDisplay();  
   display.display();
 }
 
